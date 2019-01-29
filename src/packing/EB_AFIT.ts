@@ -69,6 +69,11 @@ export class EB_AFIT {
 		this.Initialize(container, items);
 		this.ExecuteIterations(container);
 		this.Report(container);
+
+		return {
+			packed: this.itemsPackedInOrder,
+			unpacked: this.itemsToPack.slice(1, this.itemsToPack.length - 1).filter(p => !p.IsPacked),
+		};
 	}
 
 	/// <summary>
@@ -1102,14 +1107,14 @@ export class EB_AFIT {
 	}
 }
 
-interface Container {
+export interface Container {
 	ID: number;
 	Length: number;
 	Width: number;
 	Height: number;
 }
 
-interface Item {
+export interface Item {
 	ID: number;
 	IsPacked: boolean;
 	Dim1: number;
