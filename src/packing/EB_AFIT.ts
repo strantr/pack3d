@@ -11,22 +11,11 @@ export class EB_AFIT {
 
 	private scrapfirst!: ScrapPad;
 	private smallestZ!: ScrapPad;
-	private trash!: ScrapPad;
 
-	private evened!: boolean;
-	private hundredPercentPacked = false;
-	private layerDone!: boolean;
-	private packing!: boolean;
-	private packingBest = false;
-	private quit = false;
 	private bboxi: number = 0;
-	private bestIteration: number = 0;
 	private bestVariant: number = 0;
 	private boxi: number = 0;
 	private cboxi: number = 0;
-	private layerListLen: number = 0;
-	private packedItemCount: number = 0;
-	private x: number = 0;
 
 	private bbfx: number = 0;
 	private bbfy: number = 0;
@@ -67,12 +56,12 @@ export class EB_AFIT {
 	/// <returns>The bin packing result.</returns>
 	public Run(container: Container, items: Item[]) {
 		this.Initialize(container, items);
-		this.ExecuteIterations(container);
-		this.Report(container);
+		const bestIteration = this.ExecuteIterations(container);
+		this.Report(container, bestIteration);
 
 		return {
 			packed: this.itemsPackedInOrder,
-			unpacked: this.itemsToPack.slice(1, this.itemsToPack.length - 1).filter(p => !p.IsPacked),
+			unpacked: this.itemsToPack.slice(1).filter(p => !p.IsPacked),
 		};
 	}
 
@@ -87,7 +76,8 @@ export class EB_AFIT {
 		hmz: number,
 		dim1: number,
 		dim2: number,
-		dim3: number
+		dim3: number,
+		x: number
 	): void {
 		if (dim1 <= hmx && dim2 <= hmy && dim3 <= hmz) {
 			if (dim2 <= hy) {
@@ -98,7 +88,7 @@ export class EB_AFIT {
 					this.bfx = hmx - dim1;
 					this.bfy = hy - dim2;
 					this.bfz = Math.abs(hz - dim3);
-					this.boxi = this.x;
+					this.boxi = x;
 				} else if (hy - dim2 === this.bfy && hmx - dim1 < this.bfx) {
 					this.boxx = dim1;
 					this.boxy = dim2;
@@ -106,7 +96,7 @@ export class EB_AFIT {
 					this.bfx = hmx - dim1;
 					this.bfy = hy - dim2;
 					this.bfz = Math.abs(hz - dim3);
-					this.boxi = this.x;
+					this.boxi = x;
 				} else if (hy - dim2 === this.bfy && hmx - dim1 === this.bfx && Math.abs(hz - dim3) < this.bfz) {
 					this.boxx = dim1;
 					this.boxy = dim2;
@@ -114,7 +104,7 @@ export class EB_AFIT {
 					this.bfx = hmx - dim1;
 					this.bfy = hy - dim2;
 					this.bfz = Math.abs(hz - dim3);
-					this.boxi = this.x;
+					this.boxi = x;
 				}
 			} else {
 				if (dim2 - hy < this.bbfy) {
@@ -124,7 +114,7 @@ export class EB_AFIT {
 					this.bbfx = hmx - dim1;
 					this.bbfy = dim2 - hy;
 					this.bbfz = Math.abs(hz - dim3);
-					this.bboxi = this.x;
+					this.bboxi = x;
 				} else if (dim2 - hy === this.bbfy && hmx - dim1 < this.bbfx) {
 					this.bboxx = dim1;
 					this.bboxy = dim2;
@@ -132,7 +122,7 @@ export class EB_AFIT {
 					this.bbfx = hmx - dim1;
 					this.bbfy = dim2 - hy;
 					this.bbfz = Math.abs(hz - dim3);
-					this.bboxi = this.x;
+					this.bboxi = x;
 				} else if (dim2 - hy === this.bbfy && hmx - dim1 === this.bbfx && Math.abs(hz - dim3) < this.bbfz) {
 					this.bboxx = dim1;
 					this.bboxy = dim2;
@@ -140,7 +130,7 @@ export class EB_AFIT {
 					this.bbfx = hmx - dim1;
 					this.bbfy = dim2 - hy;
 					this.bbfz = Math.abs(hz - dim3);
-					this.bboxi = this.x;
+					this.bboxi = x;
 				}
 			}
 		}
@@ -149,8 +139,9 @@ export class EB_AFIT {
 	/// <summary>
 	/// After finding each box, the candidate boxes and the condition of the layer are examined.
 	/// </summary>
-	private CheckFound(): void {
-		this.evened = false;
+	private CheckFound() {
+		let evened = false;
+		let layerDone = false;
 
 		if (this.boxi !== 0) {
 			this.cboxi = this.boxi;
@@ -172,12 +163,11 @@ export class EB_AFIT {
 				this.layerThickness = this.bboxy;
 			} else {
 				if (this.smallestZ.Pre == null && this.smallestZ.Post == null) {
-					this.layerDone = true;
+					layerDone = true;
 				} else {
-					this.evened = true;
+					evened = true;
 
 					if (this.smallestZ.Pre == null) {
-						this.trash = this.smallestZ.Post!;
 						this.smallestZ.CumX = this.smallestZ.Post!.CumX;
 						this.smallestZ.CumZ = this.smallestZ.Post!.CumZ;
 						this.smallestZ.Post = this.smallestZ.Post!.Post;
@@ -208,21 +198,21 @@ export class EB_AFIT {
 				}
 			}
 		}
+
+		return { evened, layerDone };
 	}
 
 	/// <summary>
 	/// Executes the packing algorithm variants.
 	/// </summary>
-	private ExecuteIterations(container: Container): void {
+	private ExecuteIterations(container: Container): number {
 		let itelayer: number = 0;
 		let layersIndex: number = 0;
 		let bestVolume: number = 0;
+		let bestIteration: number;
+		const fullyPacked: boolean = false;
 
-		for (
-			let containerOrientationVariant = 1;
-			containerOrientationVariant <= 6 && !this.quit;
-			containerOrientationVariant++
-		) {
+		for (let containerOrientationVariant = 1; containerOrientationVariant <= 6; containerOrientationVariant++) {
 			switch (containerOrientationVariant) {
 				case 1:
 					this.px = container.Length;
@@ -264,39 +254,37 @@ export class EB_AFIT {
 			this.ListCanditLayers();
 			this.layers = this.layers.sort(l => l.LayerEval);
 
-			for (layersIndex = 0; layersIndex < this.layerListLen && !this.quit; layersIndex++) {
+			let state = { done: false, continue: true };
+
+			for (layersIndex = 0; layersIndex < this.layers.length; layersIndex++) {
 				this.packedVolume = 0.0;
 				this.packedy = 0;
-				this.packing = true;
 				this.layerThickness = this.layers[layersIndex].LayerDim;
 				itelayer = layersIndex;
 				this.remainpy = this.py;
 				this.remainpz = this.pz;
-				this.packedItemCount = 0;
 
-				for (this.x = 1; this.x <= this.itemsToPackCount; this.x++) {
-					this.itemsToPack[this.x].IsPacked = false;
+				for (let x = 1; x <= this.itemsToPackCount; x++) {
+					this.itemsToPack[x].IsPacked = false;
 				}
 
 				do {
 					this.layerinlayer = 0;
-					this.layerDone = false;
 
-					this.PackLayer();
+					state = this.PackLayer();
 
 					this.packedy = this.packedy + this.layerThickness;
 					this.remainpy = this.py - this.packedy;
 
-					if (this.layerinlayer !== 0 && !this.quit) {
+					if (this.layerinlayer !== 0) {
 						this.prepackedy = this.packedy;
 						this.preremainpy = this.remainpy;
 						this.remainpy = this.layerThickness - this.prelayer;
 						this.packedy = this.packedy - this.layerThickness + this.prelayer;
 						this.remainpz = this.lilz;
 						this.layerThickness = this.layerinlayer;
-						this.layerDone = false;
 
-						this.PackLayer();
+						state = this.PackLayer();
 
 						this.packedy = this.prepackedy;
 						this.remainpy = this.preremainpy;
@@ -304,20 +292,20 @@ export class EB_AFIT {
 					}
 
 					this.FindLayer(this.remainpy);
-				} while (this.packing && !this.quit);
+				} while (state.continue);
 
-				if (this.packedVolume > bestVolume && !this.quit) {
+				if (this.packedVolume > bestVolume) {
 					bestVolume = this.packedVolume;
 					this.bestVariant = containerOrientationVariant;
-					this.bestIteration = itelayer;
+					bestIteration = itelayer;
 				}
 
-				if (this.hundredPercentPacked) {
+				if (fullyPacked) {
 					break;
 				}
 			}
 
-			if (this.hundredPercentPacked) {
+			if (fullyPacked) {
 				break;
 			}
 
@@ -327,6 +315,8 @@ export class EB_AFIT {
 
 			this.layers = [];
 		}
+
+		return bestIteration!;
 	}
 
 	/// <summary>
@@ -345,17 +335,18 @@ export class EB_AFIT {
 		this.bboxi = 0;
 
 		for (y = 1; y <= this.itemsToPackCount; y = y + this.itemsToPack[y].Quantity) {
-			for (this.x = y; this.x < this.x + this.itemsToPack[y].Quantity - 1; this.x++) {
-				if (!this.itemsToPack[this.x].IsPacked) {
+			let x;
+			for (x = y; x < x + this.itemsToPack[y].Quantity - 1 && x < this.itemsToPackCount; x++) {
+				if (!this.itemsToPack[x].IsPacked) {
 					break;
 				}
 			}
 
-			if (this.itemsToPack[this.x].IsPacked) {
+			if (this.itemsToPack[x].IsPacked) {
 				continue;
 			}
 
-			if (this.x > this.itemsToPackCount) {
+			if (x > this.itemsToPackCount) {
 				return;
 			}
 
@@ -365,14 +356,15 @@ export class EB_AFIT {
 				hmy,
 				hz,
 				hmz,
-				this.itemsToPack[this.x].Dim1,
-				this.itemsToPack[this.x].Dim2,
-				this.itemsToPack[this.x].Dim3
+				this.itemsToPack[x].Dim1,
+				this.itemsToPack[x].Dim2,
+				this.itemsToPack[x].Dim3,
+				x
 			);
 
 			if (
-				this.itemsToPack[this.x].Dim1 === this.itemsToPack[this.x].Dim3 &&
-				this.itemsToPack[this.x].Dim3 === this.itemsToPack[this.x].Dim2
+				this.itemsToPack[x].Dim1 === this.itemsToPack[x].Dim3 &&
+				this.itemsToPack[x].Dim3 === this.itemsToPack[x].Dim2
 			) {
 				continue;
 			}
@@ -383,9 +375,10 @@ export class EB_AFIT {
 				hmy,
 				hz,
 				hmz,
-				this.itemsToPack[this.x].Dim1,
-				this.itemsToPack[this.x].Dim3,
-				this.itemsToPack[this.x].Dim2
+				this.itemsToPack[x].Dim1,
+				this.itemsToPack[x].Dim3,
+				this.itemsToPack[x].Dim2,
+				x
 			);
 			this.AnalyzeBox(
 				hmx,
@@ -393,9 +386,10 @@ export class EB_AFIT {
 				hmy,
 				hz,
 				hmz,
-				this.itemsToPack[this.x].Dim2,
-				this.itemsToPack[this.x].Dim1,
-				this.itemsToPack[this.x].Dim3
+				this.itemsToPack[x].Dim2,
+				this.itemsToPack[x].Dim1,
+				this.itemsToPack[x].Dim3,
+				x
 			);
 			this.AnalyzeBox(
 				hmx,
@@ -403,9 +397,10 @@ export class EB_AFIT {
 				hmy,
 				hz,
 				hmz,
-				this.itemsToPack[this.x].Dim2,
-				this.itemsToPack[this.x].Dim3,
-				this.itemsToPack[this.x].Dim1
+				this.itemsToPack[x].Dim2,
+				this.itemsToPack[x].Dim3,
+				this.itemsToPack[x].Dim1,
+				x
 			);
 			this.AnalyzeBox(
 				hmx,
@@ -413,9 +408,10 @@ export class EB_AFIT {
 				hmy,
 				hz,
 				hmz,
-				this.itemsToPack[this.x].Dim3,
-				this.itemsToPack[this.x].Dim1,
-				this.itemsToPack[this.x].Dim2
+				this.itemsToPack[x].Dim3,
+				this.itemsToPack[x].Dim1,
+				this.itemsToPack[x].Dim2,
+				x
 			);
 			this.AnalyzeBox(
 				hmx,
@@ -423,9 +419,10 @@ export class EB_AFIT {
 				hmy,
 				hz,
 				hmz,
-				this.itemsToPack[this.x].Dim3,
-				this.itemsToPack[this.x].Dim2,
-				this.itemsToPack[this.x].Dim1
+				this.itemsToPack[x].Dim3,
+				this.itemsToPack[x].Dim2,
+				this.itemsToPack[x].Dim1,
+				x
 			);
 		}
 	}
@@ -433,7 +430,7 @@ export class EB_AFIT {
 	/// <summary>
 	/// Finds the most proper layer height by looking at the unpacked boxes and the remaining empty space available.
 	/// </summary>
-	private FindLayer(thickness: number): void {
+	private FindLayer(thickness: number): boolean {
 		let exdim = 0;
 		let dimdif;
 		let dimen2 = 0;
@@ -444,29 +441,29 @@ export class EB_AFIT {
 		let evalx: number = 1000000;
 		this.layerThickness = 0;
 
-		for (this.x = 1; this.x <= this.itemsToPackCount; this.x++) {
-			if (this.itemsToPack[this.x].IsPacked) {
+		for (let x = 1; x <= this.itemsToPackCount; x++) {
+			if (this.itemsToPack[x].IsPacked) {
 				continue;
 			}
 
 			for (y = 1; y <= 3; y++) {
 				switch (y) {
 					case 1:
-						exdim = this.itemsToPack[this.x].Dim1;
-						dimen2 = this.itemsToPack[this.x].Dim2;
-						dimen3 = this.itemsToPack[this.x].Dim3;
+						exdim = this.itemsToPack[x].Dim1;
+						dimen2 = this.itemsToPack[x].Dim2;
+						dimen3 = this.itemsToPack[x].Dim3;
 						break;
 
 					case 2:
-						exdim = this.itemsToPack[this.x].Dim2;
-						dimen2 = this.itemsToPack[this.x].Dim1;
-						dimen3 = this.itemsToPack[this.x].Dim3;
+						exdim = this.itemsToPack[x].Dim2;
+						dimen2 = this.itemsToPack[x].Dim1;
+						dimen3 = this.itemsToPack[x].Dim3;
 						break;
 
 					case 3:
-						exdim = this.itemsToPack[this.x].Dim3;
-						dimen2 = this.itemsToPack[this.x].Dim1;
-						dimen3 = this.itemsToPack[this.x].Dim2;
+						exdim = this.itemsToPack[x].Dim3;
+						dimen2 = this.itemsToPack[x].Dim1;
+						dimen3 = this.itemsToPack[x].Dim2;
 						break;
 				}
 
@@ -477,7 +474,7 @@ export class EB_AFIT {
 					((dimen2 <= this.px && dimen3 <= this.pz) || (dimen3 <= this.px && dimen2 <= this.pz))
 				) {
 					for (z = 1; z <= this.itemsToPackCount; z++) {
-						if (!(this.x === z) && !this.itemsToPack[z].IsPacked) {
+						if (!(x === z) && !this.itemsToPack[z].IsPacked) {
 							dimdif = Math.abs(exdim - this.itemsToPack[z].Dim1);
 
 							if (Math.abs(exdim - this.itemsToPack[z].Dim2) < dimdif) {
@@ -501,8 +498,9 @@ export class EB_AFIT {
 		}
 
 		if (this.layerThickness === 0 || this.layerThickness > this.remainpy) {
-			this.packing = false;
+			return false;
 		}
+		return true;
 	}
 
 	/// <summary>
@@ -556,13 +554,11 @@ export class EB_AFIT {
 			this.itemsToPackCount += item.Quantity;
 		}
 
-		this.itemsToPack.push({} as any);
-
 		this.totalContainerVolume = container.Length * container.Height * container.Width;
 		this.totalItemVolume = 0.0;
 
-		for (this.x = 1; this.x <= this.itemsToPackCount; this.x++) {
-			const item = this.itemsToPack[this.x];
+		for (let x = 1; x <= this.itemsToPackCount; x++) {
+			const item = this.itemsToPack[x];
 			const volume = item.Dim1 * item.Dim2 * item.Dim3;
 
 			this.totalItemVolume = this.totalItemVolume + volume;
@@ -572,9 +568,6 @@ export class EB_AFIT {
 
 		this.scrapfirst.Pre = null;
 		this.scrapfirst.Post = null;
-		this.packingBest = false;
-		this.hundredPercentPacked = false;
-		this.quit = false;
 	}
 
 	/// <summary>
@@ -591,27 +584,25 @@ export class EB_AFIT {
 		let k: number = 0;
 		let layereval: number = 0;
 
-		this.layerListLen = 0;
-
-		for (this.x = 1; this.x <= this.itemsToPackCount; this.x++) {
+		for (let x = 1; x <= this.itemsToPackCount; x++) {
 			for (y = 1; y <= 3; y++) {
 				switch (y) {
 					case 1:
-						exdim = this.itemsToPack[this.x].Dim1;
-						dimen2 = this.itemsToPack[this.x].Dim2;
-						dimen3 = this.itemsToPack[this.x].Dim3;
+						exdim = this.itemsToPack[x].Dim1;
+						dimen2 = this.itemsToPack[x].Dim2;
+						dimen3 = this.itemsToPack[x].Dim3;
 						break;
 
 					case 2:
-						exdim = this.itemsToPack[this.x].Dim2;
-						dimen2 = this.itemsToPack[this.x].Dim1;
-						dimen3 = this.itemsToPack[this.x].Dim3;
+						exdim = this.itemsToPack[x].Dim2;
+						dimen2 = this.itemsToPack[x].Dim1;
+						dimen3 = this.itemsToPack[x].Dim3;
 						break;
 
 					case 3:
-						exdim = this.itemsToPack[this.x].Dim3;
-						dimen2 = this.itemsToPack[this.x].Dim1;
-						dimen3 = this.itemsToPack[this.x].Dim2;
+						exdim = this.itemsToPack[x].Dim3;
+						dimen2 = this.itemsToPack[x].Dim1;
+						dimen3 = this.itemsToPack[x].Dim2;
 						break;
 				}
 
@@ -621,7 +612,7 @@ export class EB_AFIT {
 
 				same = false;
 
-				for (k = 0; k < this.layerListLen; k++) {
+				for (k = 0; k < this.layers.length; k++) {
 					if (exdim === this.layers[k].LayerDim) {
 						same = true;
 						continue;
@@ -635,7 +626,7 @@ export class EB_AFIT {
 				layereval = 0;
 
 				for (z = 1; z <= this.itemsToPackCount; z++) {
-					if (!(this.x === z)) {
+					if (!(x === z)) {
 						dimdif = Math.abs(exdim - this.itemsToPack[z].Dim1);
 
 						if (Math.abs(exdim - this.itemsToPack[z].Dim2) < dimdif) {
@@ -648,7 +639,6 @@ export class EB_AFIT {
 					}
 				}
 
-				this.layerListLen++;
 				this.layers.push({
 					LayerEval: layereval,
 					LayerDim: exdim,
@@ -738,20 +728,19 @@ export class EB_AFIT {
 	/// <summary>
 	/// Packs the boxes found and arranges all variables and records properly.
 	/// </summary>
-	private PackLayer(): void {
+	private PackLayer(packingBest: boolean = false): { done: boolean; continue: boolean } {
 		let lenx: number;
 		let lenz: number;
 		let lpz: number;
 
 		if (this.layerThickness === 0) {
-			this.packing = false;
-			return;
+			return { done: false, continue: false };
 		}
 
 		this.scrapfirst.CumX = this.px;
 		this.scrapfirst.CumZ = 0;
 
-		for (; !this.quit; ) {
+		for (;;) {
 			this.FindSmallestZ();
 
 			if (this.smallestZ.Pre == null && this.smallestZ.Post == null) {
@@ -760,12 +749,12 @@ export class EB_AFIT {
 				lenx = this.smallestZ.CumX;
 				lpz = this.remainpz - this.smallestZ.CumZ;
 				this.FindBox(lenx, this.layerThickness, this.remainpy, lpz, lpz);
-				this.CheckFound();
+				const { evened, layerDone } = this.CheckFound();
 
-				if (this.layerDone) {
+				if (layerDone) {
 					break;
 				}
-				if (this.evened) {
+				if (evened) {
 					continue;
 				}
 
@@ -791,12 +780,12 @@ export class EB_AFIT {
 				lenz = this.smallestZ.Post!.CumZ - this.smallestZ.CumZ;
 				lpz = this.remainpz - this.smallestZ.CumZ;
 				this.FindBox(lenx, this.layerThickness, this.remainpy, lenz, lpz);
-				this.CheckFound();
+				const { evened, layerDone } = this.CheckFound();
 
-				if (this.layerDone) {
+				if (layerDone) {
 					break;
 				}
-				if (this.evened) {
+				if (evened) {
 					continue;
 				}
 
@@ -808,7 +797,6 @@ export class EB_AFIT {
 					if (this.smallestZ.CumZ + this.cboxz === this.smallestZ.Post!.CumZ) {
 						this.smallestZ.CumZ = this.smallestZ.Post!.CumZ;
 						this.smallestZ.CumX = this.smallestZ.Post!.CumX;
-						this.trash = this.smallestZ.Post!;
 						this.smallestZ.Post = this.smallestZ.Post!.Post;
 
 						if (this.smallestZ.Post != null) {
@@ -840,12 +828,12 @@ export class EB_AFIT {
 				lenz = this.smallestZ.Pre.CumZ - this.smallestZ.CumZ;
 				lpz = this.remainpz - this.smallestZ.CumZ;
 				this.FindBox(lenx, this.layerThickness, this.remainpy, lenz, lpz);
-				this.CheckFound();
+				const { evened, layerDone } = this.CheckFound();
 
-				if (this.layerDone) {
+				if (layerDone) {
 					break;
 				}
-				if (this.evened) {
+				if (evened) {
 					continue;
 				}
 
@@ -884,12 +872,12 @@ export class EB_AFIT {
 				lpz = this.remainpz - this.smallestZ.CumZ;
 
 				this.FindBox(lenx, this.layerThickness, this.remainpy, lenz, lpz);
-				this.CheckFound();
+				const { evened, layerDone } = this.CheckFound();
 
-				if (this.layerDone) {
+				if (layerDone) {
 					break;
 				}
-				if (this.evened) {
+				if (evened) {
 					continue;
 				}
 
@@ -946,12 +934,12 @@ export class EB_AFIT {
 				lenz = this.smallestZ.Pre.CumZ - this.smallestZ.CumZ;
 				lpz = this.remainpz - this.smallestZ.CumZ;
 				this.FindBox(lenx, this.layerThickness, this.remainpy, lenz, lpz);
-				this.CheckFound();
+				const { evened, layerDone } = this.CheckFound();
 
-				if (this.layerDone) {
+				if (layerDone) {
 					break;
 				}
-				if (this.evened) {
+				if (evened) {
 					continue;
 				}
 
@@ -986,17 +974,18 @@ export class EB_AFIT {
 				}
 			}
 
-			this.VolumeCheck();
+			if (this.IsFullyPacked(packingBest)) {
+				return { done: true, continue: false };
+			}
 		}
+		return { done: false, continue: true };
 	}
 
 	/// <summary>
 	/// Using the parameters found, packs the best solution found and
 	/// reports to the console.
 	/// </summary>
-	private Report(container: Container): void {
-		this.quit = false;
-
+	private Report(container: Container, bestIteration: number): void {
 		switch (this.bestVariant) {
 			case 1:
 				this.px = container.Length;
@@ -1035,8 +1024,6 @@ export class EB_AFIT {
 				break;
 		}
 
-		this.packingBest = true;
-
 		// Print("BEST SOLUTION FOUND AT ITERATION                      :", bestIteration, "OF VARIANT", bestVariant);
 		// Print("TOTAL ITEMS TO PACK                                   :", itemsToPackCount);
 		// Print("TOTAL VOLUME OF ALL ITEMS                             :", totalItemVolume);
@@ -1047,8 +1034,7 @@ export class EB_AFIT {
 		this.layers = this.layers.sort(l => l.LayerEval);
 		this.packedVolume = 0;
 		this.packedy = 0;
-		this.packing = true;
-		this.layerThickness = this.layers[this.bestIteration].LayerDim;
+		this.layerThickness = this.layers[bestIteration].LayerDim;
 		this.remainpy = this.py;
 		this.remainpz = this.pz;
 
@@ -1056,10 +1042,11 @@ export class EB_AFIT {
 			this.itemsToPack[x].IsPacked = false;
 		}
 
+		let state = { done: false, continue: true };
+
 		do {
 			this.layerinlayer = 0;
-			this.layerDone = false;
-			this.PackLayer();
+			state = this.PackLayer(true);
 			this.packedy = this.packedy + this.layerThickness;
 			this.remainpy = this.py - this.packedy;
 
@@ -1070,23 +1057,20 @@ export class EB_AFIT {
 				this.packedy = this.packedy - this.layerThickness + this.prelayer;
 				this.remainpz = this.lilz;
 				this.layerThickness = this.layerinlayer;
-				this.layerDone = false;
-				this.PackLayer();
+				state = this.PackLayer(true);
 				this.packedy = this.prepackedy;
 				this.remainpy = this.preremainpy;
 				this.remainpz = this.pz;
 			}
 
-			if (!this.quit) {
-				this.FindLayer(this.remainpy);
-			}
-		} while (this.packing && !this.quit);
+			this.FindLayer(this.remainpy);
+		} while (state.continue);
 	}
 
 	/// <summary>
 	/// After packing of each item, the 100% packing condition is checked.
 	/// </summary>
-	private VolumeCheck(): void {
+	private IsFullyPacked(packingBest: boolean): boolean {
 		this.itemsToPack[this.cboxi].IsPacked = true;
 		this.itemsToPack[this.cboxi].PackDimX = this.cboxx;
 		this.itemsToPack[this.cboxi].PackDimY = this.cboxy;
@@ -1094,14 +1078,13 @@ export class EB_AFIT {
 		const item = this.itemsToPack[this.cboxi];
 		const volume = item.Dim1 * item.Dim2 * item.Dim3;
 		this.packedVolume = this.packedVolume + volume;
-		this.packedItemCount++;
 
-		if (this.packingBest) {
+		if (packingBest) {
 			this.OutputBoxList();
 		} else if (this.packedVolume === this.totalContainerVolume || this.packedVolume === this.totalItemVolume) {
-			this.packing = false;
-			this.hundredPercentPacked = true;
+			return true;
 		}
+		return false;
 	}
 }
 
