@@ -87,7 +87,7 @@ export class EB_AFIT {
 		hmz: number,
 		dim1: number,
 		dim2: number,
-		dim3: number,
+		dim3: number
 	): void {
 		if (dim1 <= hmx && dim2 <= hmy && dim3 <= hmz) {
 			if (dim2 <= hy) {
@@ -261,11 +261,10 @@ export class EB_AFIT {
 					break;
 			}
 
-			this.layers.push({ LayerEval: -1, LayerDim: 0 });
 			this.ListCanditLayers();
 			this.layers = this.layers.sort(l => l.LayerEval);
 
-			for (layersIndex = 1; layersIndex <= this.layerListLen && !this.quit; layersIndex++) {
+			for (layersIndex = 0; layersIndex < this.layerListLen && !this.quit; layersIndex++) {
 				this.packedVolume = 0.0;
 				this.packedy = 0;
 				this.packing = true;
@@ -368,7 +367,7 @@ export class EB_AFIT {
 				hmz,
 				this.itemsToPack[this.x].Dim1,
 				this.itemsToPack[this.x].Dim2,
-				this.itemsToPack[this.x].Dim3,
+				this.itemsToPack[this.x].Dim3
 			);
 
 			if (
@@ -386,7 +385,7 @@ export class EB_AFIT {
 				hmz,
 				this.itemsToPack[this.x].Dim1,
 				this.itemsToPack[this.x].Dim3,
-				this.itemsToPack[this.x].Dim2,
+				this.itemsToPack[this.x].Dim2
 			);
 			this.AnalyzeBox(
 				hmx,
@@ -396,7 +395,7 @@ export class EB_AFIT {
 				hmz,
 				this.itemsToPack[this.x].Dim2,
 				this.itemsToPack[this.x].Dim1,
-				this.itemsToPack[this.x].Dim3,
+				this.itemsToPack[this.x].Dim3
 			);
 			this.AnalyzeBox(
 				hmx,
@@ -406,7 +405,7 @@ export class EB_AFIT {
 				hmz,
 				this.itemsToPack[this.x].Dim2,
 				this.itemsToPack[this.x].Dim3,
-				this.itemsToPack[this.x].Dim1,
+				this.itemsToPack[this.x].Dim1
 			);
 			this.AnalyzeBox(
 				hmx,
@@ -416,7 +415,7 @@ export class EB_AFIT {
 				hmz,
 				this.itemsToPack[this.x].Dim3,
 				this.itemsToPack[this.x].Dim1,
-				this.itemsToPack[this.x].Dim2,
+				this.itemsToPack[this.x].Dim2
 			);
 			this.AnalyzeBox(
 				hmx,
@@ -426,7 +425,7 @@ export class EB_AFIT {
 				hmz,
 				this.itemsToPack[this.x].Dim3,
 				this.itemsToPack[this.x].Dim2,
-				this.itemsToPack[this.x].Dim1,
+				this.itemsToPack[this.x].Dim1
 			);
 		}
 	}
@@ -622,7 +621,7 @@ export class EB_AFIT {
 
 				same = false;
 
-				for (k = 1; k <= this.layerListLen; k++) {
+				for (k = 0; k < this.layerListLen; k++) {
 					if (exdim === this.layers[k].LayerDim) {
 						same = true;
 						continue;
@@ -1044,7 +1043,6 @@ export class EB_AFIT {
 		// Print("WHILE CONTAINER ORIENTATION X - Y - Z                 :", px, py, pz);
 
 		this.layers.length = 0;
-		this.layers.push({ LayerEval: -1, LayerDim: 0 });
 		this.ListCanditLayers();
 		this.layers = this.layers.sort(l => l.LayerEval);
 		this.packedVolume = 0;
