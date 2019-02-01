@@ -5,12 +5,13 @@
 		"exclude": ["node_modules/**"]
 	},
 	"rules": {
-		"quotemark": [true, "single"],
+		"quotemark": [true, "double"],
 		"indent": [true, "tabs"],
 		"interface-name": false,
 		"ordered-imports": false,
 		"object-literal-sort-keys": false,
 		"no-consecutive-blank-lines": false,
-		"arrow-parens": false
+		"arrow-parens": false,
+		"trailing-comma": false
 	}
 }

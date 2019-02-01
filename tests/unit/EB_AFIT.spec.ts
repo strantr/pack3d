@@ -1,5 +1,5 @@
-import { Item, EB_AFIT } from '@/packing/EB_AFIT';
-import { expect } from 'chai';
+import { Item, EB_AFIT } from "@/packing/EB_AFIT";
+import { expect } from "chai";
 
 const OR2DBinPackingReference = `1 2502505
 1 112 104 88.47 89.52 1
@@ -58,20 +58,19 @@ const OR2DBinPackingReference = `1 2502505
 2 57 1 37 1 30 1 66
 3 79 0 74 0 35 1 56`;
 
-describe('EB AFIT algorithm', () => {
-	const split = OR2DBinPackingReference.split('\n');
+describe("EB AFIT algorithm", () => {
+	const split = OR2DBinPackingReference.split("\n");
 	for (let i = 0; i < split.length; ) {
-		console.log(i, split.length, split[i]);
 		const id = split[i++];
-		const expectedResults = split[i++].split(' ');
-		const container = split[i++].split(' ');
+		const expectedResults = split[i++].split(" ");
+		const container = split[i++].split(" ");
 		const itemCount = +split[i++];
 		const items: Item[] = [];
 		for (let x = 0; x < itemCount; x++) {
-			const item = split[i++].split(' ');
+			const item = split[i++].split(" ");
 			items.push({ ID: +item[0], Dim1: +item[1], Dim2: +item[3], Dim3: +item[5], Quantity: +item[7] } as any);
 		}
-		it('passes standard reference tests: ' + id, () => {
+		it("passes standard reference tests: " + id, () => {
 			const packer = new EB_AFIT();
 			const result = packer.Run(
 				{
@@ -80,12 +79,12 @@ describe('EB AFIT algorithm', () => {
 					Width: +container[1],
 					Height: +container[2],
 				},
-				items,
+				items
 			);
-			expect(result.packed.length + result.unpacked.length, 'incorrect total number of items').to.eq(
-				+expectedResults[1],
+			expect(result.packed.length + result.unpacked.length, "incorrect total number of items").to.eq(
+				+expectedResults[1]
 			);
-			expect(result.packed.length, 'incorrect number of packed items').to.eq(+expectedResults[2]);
+			expect(result.packed.length, "incorrect number of packed items").to.eq(+expectedResults[2]);
 		});
 	}
 });

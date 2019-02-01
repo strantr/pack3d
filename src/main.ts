@@ -1,12 +1,12 @@
-import Vue from 'vue';
-import App from './App.vue';
-import { EB_AFIT } from './packing/EB_AFIT';
+import Vue from "vue";
+import App from "./App.vue";
+import { EB_AFIT } from "./packing/EB_AFIT";
 
 Vue.config.productionTip = false;
 
 new Vue({
 	render: h => h(App),
-}).$mount('#app');
+}).$mount("#app");
 
 const pack = new EB_AFIT();
 pack.Run(
