@@ -77,60 +77,32 @@ export class EB_AFIT {
 		dim1: number,
 		dim2: number,
 		dim3: number,
-		x: number
+		i: number
 	): void {
 		if (dim1 <= hmx && dim2 <= hmy && dim3 <= hmz) {
+			const x = hmx - dim1;
+			const z = Math.abs(hz - dim3);
 			if (dim2 <= hy) {
-				if (hy - dim2 < this.bfy) {
+				const y = hy - dim2;
+				if (y < this.bfy || (y === this.bfy && (x < this.bfx || (x === this.bfx && z < this.bfz)))) {
 					this.boxx = dim1;
 					this.boxy = dim2;
 					this.boxz = dim3;
-					this.bfx = hmx - dim1;
-					this.bfy = hy - dim2;
-					this.bfz = Math.abs(hz - dim3);
-					this.boxi = x;
-				} else if (hy - dim2 === this.bfy && hmx - dim1 < this.bfx) {
-					this.boxx = dim1;
-					this.boxy = dim2;
-					this.boxz = dim3;
-					this.bfx = hmx - dim1;
-					this.bfy = hy - dim2;
-					this.bfz = Math.abs(hz - dim3);
-					this.boxi = x;
-				} else if (hy - dim2 === this.bfy && hmx - dim1 === this.bfx && Math.abs(hz - dim3) < this.bfz) {
-					this.boxx = dim1;
-					this.boxy = dim2;
-					this.boxz = dim3;
-					this.bfx = hmx - dim1;
-					this.bfy = hy - dim2;
-					this.bfz = Math.abs(hz - dim3);
-					this.boxi = x;
+					this.bfx = x;
+					this.bfy = y;
+					this.bfz = z;
+					this.boxi = i;
 				}
 			} else {
-				if (dim2 - hy < this.bbfy) {
+				const y = dim2 - hy;
+				if (y < this.bbfy || (y === this.bbfy && (x < this.bbfx || (x === this.bbfx && z < this.bbfz)))) {
 					this.bboxx = dim1;
 					this.bboxy = dim2;
 					this.bboxz = dim3;
-					this.bbfx = hmx - dim1;
-					this.bbfy = dim2 - hy;
-					this.bbfz = Math.abs(hz - dim3);
-					this.bboxi = x;
-				} else if (dim2 - hy === this.bbfy && hmx - dim1 < this.bbfx) {
-					this.bboxx = dim1;
-					this.bboxy = dim2;
-					this.bboxz = dim3;
-					this.bbfx = hmx - dim1;
-					this.bbfy = dim2 - hy;
-					this.bbfz = Math.abs(hz - dim3);
-					this.bboxi = x;
-				} else if (dim2 - hy === this.bbfy && hmx - dim1 === this.bbfx && Math.abs(hz - dim3) < this.bbfz) {
-					this.bboxx = dim1;
-					this.bboxy = dim2;
-					this.bboxz = dim3;
-					this.bbfx = hmx - dim1;
-					this.bbfy = dim2 - hy;
-					this.bbfz = Math.abs(hz - dim3);
-					this.bboxi = x;
+					this.bbfx = x;
+					this.bbfy = y;
+					this.bbfz = z;
+					this.bboxi = i;
 				}
 			}
 		}
@@ -202,6 +174,27 @@ export class EB_AFIT {
 		return { evened, layerDone };
 	}
 
+	private Rotate(variant: number, Length: number, Height: number, Width: number) {
+		switch (variant) {
+			case 1:
+				return [Length, Height, Width];
+			case 2:
+				return [Width, Height, Length];
+
+			case 3:
+				return [Width, Length, Height];
+
+			case 4:
+				return [Height, Length, Width];
+
+			case 5:
+				return [Length, Width, Height];
+
+			default:
+				return [Height, Width, Length];
+		}
+	}
+
 	/// <summary>
 	/// Executes the packing algorithm variants.
 	/// </summary>
@@ -213,43 +206,10 @@ export class EB_AFIT {
 		const fullyPacked: boolean = false;
 
 		for (let containerOrientationVariant = 1; containerOrientationVariant <= 6; containerOrientationVariant++) {
-			switch (containerOrientationVariant) {
-				case 1:
-					this.px = container.Length;
-					this.py = container.Height;
-					this.pz = container.Width;
-					break;
-
-				case 2:
-					this.px = container.Width;
-					this.py = container.Height;
-					this.pz = container.Length;
-					break;
-
-				case 3:
-					this.px = container.Width;
-					this.py = container.Length;
-					this.pz = container.Height;
-					break;
-
-				case 4:
-					this.px = container.Height;
-					this.py = container.Length;
-					this.pz = container.Width;
-					break;
-
-				case 5:
-					this.px = container.Length;
-					this.py = container.Width;
-					this.pz = container.Height;
-					break;
-
-				case 6:
-					this.px = container.Height;
-					this.py = container.Width;
-					this.pz = container.Length;
-					break;
-			}
+			const rotation = this.Rotate(containerOrientationVariant, container.Length, container.Height, container.Width);
+			this.px = rotation[0];
+			this.py = rotation[1];
+			this.pz = rotation[2];
 
 			this.ListCanditLayers();
 			this.layers = this.layers.sort(l => l.LayerEval);
@@ -325,12 +285,12 @@ export class EB_AFIT {
 	/// </summary>
 	private FindBox(hmx: number, hy: number, hmy: number, hz: number, hmz: number): void {
 		let y: number;
-		this.bfx = 32767;
-		this.bfy = 32767;
-		this.bfz = 32767;
-		this.bbfx = 32767;
-		this.bbfy = 32767;
-		this.bbfz = 32767;
+		this.bfx = Infinity;
+		this.bfy = Infinity;
+		this.bfz = Infinity;
+		this.bbfx = Infinity;
+		this.bbfy = Infinity;
+		this.bbfz = Infinity;
 		this.boxi = 0;
 		this.bboxi = 0;
 
@@ -1071,11 +1031,12 @@ export class EB_AFIT {
 	/// After packing of each item, the 100% packing condition is checked.
 	/// </summary>
 	private IsFullyPacked(packingBest: boolean): boolean {
-		this.itemsToPack[this.cboxi].IsPacked = true;
-		this.itemsToPack[this.cboxi].PackDimX = this.cboxx;
-		this.itemsToPack[this.cboxi].PackDimY = this.cboxy;
-		this.itemsToPack[this.cboxi].PackDimZ = this.cboxz;
 		const item = this.itemsToPack[this.cboxi];
+		item.IsPacked = true;
+		item.PackDimX = this.cboxx;
+		item.PackDimY = this.cboxy;
+		item.PackDimZ = this.cboxz;
+
 		const volume = item.Dim1 * item.Dim2 * item.Dim3;
 		this.packedVolume = this.packedVolume + volume;
 
