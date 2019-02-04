@@ -1,30 +1,42 @@
 <template>
 	<div id="app">
-		<img alt="Vue logo"
-		     src="./assets/logo.png">
-		<HelloWorld msg="Welcome to Your Vue.js + TypeScript App" />
+		<Sidebar>
+			<Configuration />
+		</Sidebar>
+		<div class="canvas">
+			<div class="canvas__body">
+				ayy
+			</div>
+		</div>
 	</div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import HelloWorld from "./components/HelloWorld.vue";
+import Sidebar from "./components/Sidebar.vue";
+import Configuration from "./components/Configuration.vue";
 
 @Component({
 	components: {
-		HelloWorld
+		Configuration,
+		Sidebar
 	}
 })
 export default class App extends Vue {}
 </script>
 
 <style lang="scss">
+$bg: #333;
 #app {
-	font-family: "Avenir", Helvetica, Arial, sans-serif;
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-	text-align: center;
-	color: #2c3e50;
-	margin-top: 60px;
+	color: rgba(255, 255, 255, 0.87);
+	display: flex;
+	flex-wrap: wrap;
+}
+.canvas {
+	background: linear-gradient(#eee, #fff 80%);
+	flex: auto;
+	&__body {
+		padding: 15px;
+	}
 }
 </style>

@@ -1,0 +1,6 @@
+Pallet grouping not allowing splitting of pallets
+	If a single group does not fit then pack what fits then allow the group to be split
+Pallet grouping with priority ordering
+Non stackable pallets (may not have items stacked on them and may not be stacked on another item)
+
+Finish refactoring AFIT class

@@ -1,0 +1,45 @@
+@font-face {
+	font-family: "PT Sans";
+	font-style: normal;
+	font-weight: 400;
+	src: local("PT Sans"), local("PTSans-Regular"),
+		url(https://fonts.gstatic.com/s/ptsans/v9/jizaRExUiTo99u79D0KExQ.woff2) format("woff2");
+	unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC,
+		U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+* {
+	box-sizing: border-box;
+}
+body {
+	margin: 0;
+	font-size: 16px;
+	background: #fff;
+
+	.material-design-icon,
+	.material-design-icon > .material-design-icon__svg {
+		height: 1.25em;
+		width: 1.25em;
+	}
+
+	.material-design-icon.x2,
+	.material-design-icon.x2 > .material-design-icon__svg {
+		height: 2em;
+		width: 2em;
+	}
+}
+body,
+input {
+	font-family: "PT Sans", Helvetica, Arial, sans-serif;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+.material-design-icon.button {
+	color: rgba(255, 255, 255, 0.5);
+	transition: color 0.2s;
+	cursor: pointer;
+	&:hover {
+		color: #fff;
+	}
+}

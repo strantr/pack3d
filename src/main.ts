@@ -1,6 +1,8 @@
-import Vue from "vue";
+import Vue, { CreateElement } from "vue";
 import App from "./App.vue";
 import { EB_AFIT } from "./packing/EB_AFIT";
+import "./styles.scss";
+import "vue-material-design-icons/styles.css";
 
 Vue.config.productionTip = false;
 
@@ -24,5 +26,5 @@ pack.Run(
 			Dim3: 1,
 			Quantity: 2,
 		} as any,
-	],
+	]
 );
