@@ -65,9 +65,21 @@ export class EB_AFIT {
 		};
 	}
 
-	/// <summary>
-	/// Analyzes each unpacked box to find the best fitting one to the empty space given.
-	/// </summary>
+	/**
+	 * Analyzes each unpacked box to find the best fitting one to the empty space given.
+	 *
+	 * @private
+	 * @param {number} hmx Maximum available x-dimension ofthe current gap to be filled
+	 * @param {number} hy Current layer thickness value.
+	 * @param {number} hmy Maximum available y-dimension ofthe current gap to be filled.
+	 * @param {number} hz Z-dimension ofthe current gap to be filled
+	 * @param {number} hmz Maximum available z-dimension to the current gap to be filled.
+	 * @param {number} dim1 X-dimension ofthe orientation ofthe box being examined.
+	 * @param {number} dim2 Y-dimension ofthe orientation ofthe box being examined
+	 * @param {number} dim3 Z-dimension ofthe orientation ofthe box being examined
+	 * @param {number} i Index of current box
+	 * @memberof EB_AFIT
+	 */
 	private AnalyzeBox(
 		hmx: number,
 		hy: number,
