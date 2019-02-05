@@ -1,8 +1,8 @@
 <template>
-  <div class="configuration">
-    <Containers :containers="containers"/>
-    <ItemGroups :groups="groups"/>
-  </div>
+	<div class="configuration">
+		<Containers :containers="containers" />
+		<ItemGroups :groups="groups" />
+	</div>
 </template>
 
 <script lang="ts">
@@ -27,7 +27,9 @@ export interface ItemGroup {
 	name: string;
 	priority: number;
 	color: string;
+	items: Item[];
 }
+
 @Component({
 	components: {
 		Card,
@@ -45,8 +47,10 @@ export default class Configuration extends Vue {
 
 <style lang="scss">
 .configuration {
-	display: flex;
-	flex-direction: column;
+	height: 100%;
+	overflow: auto;
+	position: relative;
+
 	.card {
 		min-height: 6.5em;
 	}
@@ -71,10 +75,5 @@ export default class Configuration extends Vue {
 }
 .subtle {
 	opacity: 0.6;
-}
-.item-color {
-	width: 1em;
-	height: 1em;
-	margin: 0 auto;
 }
 </style>

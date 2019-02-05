@@ -52,7 +52,6 @@ $bg: rgb(133, 108, 234);
 	transition: all 0.2s;
 	min-width: 25em;
 	height: 100vh;
-	overflow: hidden;
 	display: flex;
 	flex-direction: column;
 

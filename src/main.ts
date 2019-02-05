@@ -7,7 +7,7 @@ import "vue-material-design-icons/styles.css";
 Vue.config.productionTip = false;
 
 new Vue({
-	render: h => h(App),
+	render: h => h(App)
 }).$mount("#app");
 
 const pack = new EB_AFIT();
@@ -16,7 +16,7 @@ pack.Run(
 		Height: 1,
 		Length: 10,
 		Width: 10,
-		ID: 1,
+		ID: 1
 	},
 	[
 		{
@@ -24,7 +24,7 @@ pack.Run(
 			Dim1: 5,
 			Dim2: 5,
 			Dim3: 1,
-			Quantity: 2,
-		} as any,
+			Quantity: 2
+		} as any
 	]
 );
