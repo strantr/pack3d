@@ -1,8 +1,8 @@
 <template>
-	<div class="configuration">
-		<Containers :containers="containers" />
-		<ItemGroups :groups="groups" />
-	</div>
+  <div class="configuration">
+    <Containers :containers="containers" :style="{flexShrink: 0, maxHeight: '30%'}"/>
+    <ItemGroups :groups="groups"/>
+  </div>
 </template>
 
 <script lang="ts">
@@ -48,8 +48,9 @@ export default class Configuration extends Vue {
 <style lang="scss">
 .configuration {
 	height: 100%;
-	overflow: auto;
-	position: relative;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
 
 	.card {
 		min-height: 6.5em;

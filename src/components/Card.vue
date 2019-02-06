@@ -32,6 +32,7 @@ export default class Card extends Vue {
 	margin-top: 0.75em;
 	display: flex;
 	flex-direction: column;
+    overflow: hidden;
 	&__header {
 		border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 		display: flex;
@@ -53,6 +54,8 @@ export default class Card extends Vue {
 	}
 	&__body {
 		padding: 1em;
+        overflow: auto;
+        flex: 1 1 auto;
 	}
 }
 </style>
