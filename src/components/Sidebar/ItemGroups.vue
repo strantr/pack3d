@@ -1,80 +1,97 @@
 <template>
-  <card title="Item Groups">
-    <div slot="title--after" class="card__header__buttons">
-      <PlusIcon title="Add new group" class="button" @click.native="addGroup"/>
-    </div>
-    <div class="groups">
-      <template v-if="groups.length">
-        <card class="group" v-for="(group, i) in groups" :key="group.id">
-          <template slot="header">
-            <input
-              v-if="editingGroup===group"
-              class="group__name"
-              v-model="group.name"
-              v-mount-focus.select
-              @blur="editingGroup=null"
-            >
-            <span class="group__name" @click="editingGroup=group" v-else>
-              {{group.name}}
-              <PencilIcon style="font-size: .75em"/>
-            </span>
+	<card title="Item Groups">
+		<div slot="title--after"
+		     class="card__header__buttons">
+			<PlusIcon title="Add new group"
+			          class="button"
+			          @click.native="addGroup" />
+		</div>
+		<div class="groups">
+			<template v-if="groups.length">
+				<card class="group"
+				      v-for="(group, i) in groups"
+				      :key="group.id">
+					<template slot="header">
+						<input v-if="editingGroup===group"
+						       class="group__name"
+						       v-model="group.name"
+						       v-mount-focus.select
+						       @blur="editingGroup=null">
+						<span class="group__name"
+						      @click="editingGroup=group"
+						      v-else>
+							{{group.name}}
+							<PencilIcon style="font-size: .75em" />
+						</span>
 
-            <div class="card__header__buttons">
-              <div>Add New Item
-                <PlusIcon title="Add new item" class="button" @click.native="addNewItem(group)"/>
-              </div>
-              <PaletteIcon
-                class="button shadow"
-                :style="{color: group.color}"
-                @click.native="showColorPicker"
-              />
-              <input type="color" v-model="group.color" style="display: none">
-              <input type="number" placeholder="Priority">
-              <CloseIcon class="button" @click.native="groups.splice(i,1)"/>
-            </div>
-          </template>
+						<div class="card__header__buttons">
+							<div>Add New Item
+								<PlusIcon title="Add new item"
+								          class="button"
+								          @click.native="addNewItem(group)" />
+							</div>
+							<PaletteIcon class="button shadow"
+							             :style="{color: group.color}"
+							             @click.native="showColorPicker" />
+							<input type="color"
+							       v-model="group.color"
+							       style="display: none">
+							<input type="number"
+							       placeholder="Priority">
+							<CloseIcon class="button"
+							           @click.native="groups.splice(i,1)" />
+						</div>
+					</template>
 
-          <table class="grid" v-if="group.items.length">
-            <thead>
-              <th style="text-align: left; width: 100%">Name</th>
-              <th>Width</th>
-              <th>Height</th>
-              <th>Length</th>
-              <th></th>
-            </thead>
-            <tbody>
-              <tr v-for="(item, i) in group.items" :key="item.id">
-                <td>
-                  <input style="width: 100%">
-                </td>
-                <td>
-                  <input type="number" v-model="item.dim1">
-                </td>
-                <td>
-                  <input type="number" v-model="item.dim2">
-                </td>
-                <td>
-                  <input type="number" v-model="item.dim3">
-                </td>
-                <td>
-                  <CloseIcon class="button" @click.native="group.items.splice(i,1)"/>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div class="subtle" v-else>Add some items!</div>
-        </card>
-      </template>
-      <div class="subtle" v-else>Add some groups!</div>
-    </div>
-  </card>
+					<table class="grid"
+					       v-if="group.items.length">
+						<thead>
+							<th style="text-align: left; width: 100%">Name</th>
+							<th>Width</th>
+							<th>Height</th>
+							<th>Length</th>
+							<th></th>
+						</thead>
+						<tbody>
+							<tr v-for="(item, i) in group.items"
+							    :key="item.id">
+								<td>
+									<input style="width: 100%">
+								</td>
+								<td>
+									<input type="number"
+									       v-model="item.dim1">
+								</td>
+								<td>
+									<input type="number"
+									       v-model="item.dim2">
+								</td>
+								<td>
+									<input type="number"
+									       v-model="item.dim3">
+								</td>
+								<td>
+									<CloseIcon class="button"
+									           @click.native="group.items.splice(i,1)" />
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<div class="subtle"
+					     v-else>Add some items!</div>
+				</card>
+			</template>
+			<div class="subtle"
+			     v-else>Add some groups!</div>
+		</div>
+	</card>
 </template>
 
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
 import randomColor from "randomcolor";
 import Card from "../Card.vue";
-import { ItemGroup } from "./Configuration.vue";
+import { ItemGroup } from "@/models";
 import PlusIcon from "icons/Plus.vue";
 import CloseIcon from "icons/Close.vue";
 import PencilIcon from "icons/Pencil.vue";
@@ -138,8 +155,7 @@ export default class ItemGroups extends Vue {
 	}
 
 	public showColorPicker(e: Event) {
-		(e.srcElement!.closest(".material-design-icon")!
-			.nextElementSibling as HTMLElement)!.click();
+		(e.srcElement!.closest(".material-design-icon")!.nextElementSibling as HTMLElement)!.click();
 	}
 
 	private getNextColor() {
@@ -180,7 +196,11 @@ export default class ItemGroups extends Vue {
 	}
 	span.group__name {
 		cursor: text;
+		white-space: nowrap;
 		font-size: 0.9em;
+	}
+	.card__header__buttons {
+		white-space: nowrap;
 	}
 	.card__header__buttons input {
 		padding: 0 0.25em;

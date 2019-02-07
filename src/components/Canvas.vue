@@ -1,5 +1,5 @@
 <template>
-  <div></div>
+	<div class="canvas"></div>
 </template>
 
 <script lang="ts">
@@ -9,12 +9,7 @@ import * as THREE from "three";
 @Component({})
 export default class Canvas extends Vue {
 	private mounted() {
-		const camera = new THREE.PerspectiveCamera(
-			75,
-			this.$el.clientWidth / this.$el.clientHeight,
-			0.1,
-			1000
-		);
+		const camera = new THREE.PerspectiveCamera(75, this.$el.clientWidth / this.$el.clientHeight, 0.1, 1000);
 
 		const scene = new THREE.Scene();
 		scene.background = new THREE.Color("white");
@@ -26,7 +21,7 @@ export default class Canvas extends Vue {
 
 		const geometry = new THREE.BoxGeometry(1, 1, 1);
 		const material = new THREE.MeshBasicMaterial({
-			color: 0x00ff00,
+			color: new THREE.Color("red"),
 			wireframe: true
 		});
 		const cube = new THREE.Mesh(geometry, material);
@@ -50,5 +45,9 @@ export default class Canvas extends Vue {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
+.canvas {
+	flex: auto;
+	min-width: 50vw;
+}
 </style>

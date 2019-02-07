@@ -1,10 +1,10 @@
 <template>
-  <div id="app">
-    <Sidebar>
-      <Configuration/>
-    </Sidebar>
-    <Canvas class="canvas"/>
-  </div>
+	<div id="app">
+		<Sidebar>
+			<Configuration />
+		</Sidebar>
+		<Canvas />
+	</div>
 </template>
 
 <script lang="ts">
@@ -28,8 +28,6 @@ export default class App extends Vue {}
 	color: rgba(255, 255, 255, 0.87);
 	display: flex;
 	flex-wrap: wrap;
-}
-.canvas {
-	flex: auto;
+	min-height: 100vh;
 }
 </style>

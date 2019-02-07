@@ -1,8 +1,9 @@
 <template>
-  <div class="configuration">
-    <Containers :containers="containers" :style="{flexShrink: 0, maxHeight: '30%'}"/>
-    <ItemGroups :groups="groups"/>
-  </div>
+	<div class="configuration">
+		<Containers :containers="containers"
+		            :style="{flexShrink: 0, maxHeight: '30vh'}" />
+		<ItemGroups :groups="groups" />
+	</div>
 </template>
 
 <script lang="ts">
@@ -12,23 +13,7 @@ import Containers from "./Containers.vue";
 import ItemGroups from "./ItemGroups.vue";
 import SettingsIcon from "icons/Settings.vue";
 import CloseIcon from "icons/Close.vue";
-
-export interface Container {
-	id: number;
-	dim1: number;
-	dim2: number;
-	dim3: number;
-}
-export interface Item extends Container {
-	color: string;
-}
-export interface ItemGroup {
-	id: number;
-	name: string;
-	priority: number;
-	color: string;
-	items: Item[];
-}
+import state from "@/state";
 
 @Component({
 	components: {
@@ -40,8 +25,12 @@ export interface ItemGroup {
 	}
 })
 export default class Configuration extends Vue {
-	public containers: Container[] = [];
-	public groups: ItemGroup[] = [];
+	private get containers() {
+		return state.containers;
+	}
+	private get groups() {
+		return state.groups;
+	}
 }
 </script>
 

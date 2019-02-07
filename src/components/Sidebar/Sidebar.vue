@@ -51,15 +51,16 @@ $bg: rgb(133, 108, 234);
 	background: linear-gradient($bg, lighten(saturate($bg, 5%), 5%) 10%);
 	transition: all 0.2s;
 	min-width: 25em;
-	height: 100vh;
 	display: flex;
 	flex-direction: column;
-
+	max-height: 100vh;
+	flex: auto;
 	&.collapsed {
-		padding: 0.5em;
+		min-width: 0;
 		width: calc(48px + 1em);
 		overflow: hidden;
 		min-width: unset;
+		flex: 1;
 		.sidebar__header {
 			border-bottom: none;
 		}
