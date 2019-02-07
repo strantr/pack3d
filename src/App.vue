@@ -3,21 +3,21 @@
     <Sidebar>
       <Configuration/>
     </Sidebar>
-    <div class="canvas">
-      <div class="canvas__body">ayy</div>
-    </div>
+    <Canvas class="canvas"/>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import Sidebar from "./components/Sidebar/Sidebar.vue";
+import Canvas from "./components/Canvas.vue";
 import Configuration from "./components/Sidebar/Configuration.vue";
 
 @Component({
 	components: {
 		Configuration,
-		Sidebar
+		Sidebar,
+		Canvas
 	}
 })
 export default class App extends Vue {}
@@ -30,10 +30,6 @@ export default class App extends Vue {}
 	flex-wrap: wrap;
 }
 .canvas {
-	background: linear-gradient(#eee, #fff 80%);
 	flex: auto;
-	&__body {
-		padding: 15px;
-	}
 }
 </style>

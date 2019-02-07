@@ -5,11 +5,7 @@
     </div>
     <div class="groups">
       <template v-if="groups.length">
-        <card
-          class="group"
-          v-for="(group, i) in groups"
-          :key="group.id"
-        >
+        <card class="group" v-for="(group, i) in groups" :key="group.id">
           <template slot="header">
             <input
               v-if="editingGroup===group"
@@ -24,6 +20,9 @@
             </span>
 
             <div class="card__header__buttons">
+              <div>Add New Item
+                <PlusIcon title="Add new item" class="button" @click.native="addNewItem(group)"/>
+              </div>
               <PaletteIcon
                 class="button shadow"
                 :style="{color: group.color}"
@@ -37,7 +36,6 @@
 
           <table class="grid" v-if="group.items.length">
             <thead>
-              <th>Colour</th>
               <th style="text-align: left; width: 100%">Name</th>
               <th>Width</th>
               <th>Height</th>
@@ -46,7 +44,6 @@
             </thead>
             <tbody>
               <tr v-for="(item, i) in group.items" :key="item.id">
-                <td></td>
                 <td>
                   <input style="width: 100%">
                 </td>
@@ -108,14 +105,6 @@ export default class ItemGroups extends Vue {
 	private groupId: number = 1;
 	private colors: string[] = [];
 
-	private hexToRgb(hex: string) {
-		const bigint = parseInt(hex, 16);
-		const r = (bigint >> 16) & 255;
-		const g = (bigint >> 8) & 255;
-		const b = bigint & 255;
-		return { r, g, b };
-	}
-
 	public addGroup() {
 		const c = this.getNextColor();
 		const rgb = this.hexToRgb(c.substr(1));
@@ -138,6 +127,16 @@ export default class ItemGroups extends Vue {
 		this.editingGroup = g;
 	}
 
+	public addNewItem(group: ItemGroup) {
+		group.items.push({
+			color: group.color,
+			id: group.items.length ? group.items[group.items.length - 1].id + 1 : 1,
+			dim1: 0,
+			dim2: 0,
+			dim3: 1
+		});
+	}
+
 	public showColorPicker(e: Event) {
 		(e.srcElement!.closest(".material-design-icon")!
 			.nextElementSibling as HTMLElement)!.click();
@@ -148,6 +147,16 @@ export default class ItemGroups extends Vue {
 			this.colors.push(...randomColor({ count: 10 }));
 		}
 		return this.colors.pop()!;
+	}
+
+	private hexToRgb(hex: string) {
+		const bigint = parseInt(hex, 16);
+		/* tslint:disable */
+		const r = (bigint >> 16) & 255;
+		const g = (bigint >> 8) & 255;
+		const b = bigint & 255;
+		return { r, g, b };
+		/* tslint:enable */
 	}
 }
 </script>
@@ -163,7 +172,7 @@ export default class ItemGroups extends Vue {
 }
 .group {
 	background: rgba(255, 255, 255, 0.15);
-    transition: background 0.2s;
+	transition: background 0.2s;
 	input.group__name {
 		font-size: 0.9em;
 		padding: 0;
